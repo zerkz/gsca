@@ -1,0 +1,12 @@
+# Example allow list
+# Only numeric Steam app IDs are supported
+# Use 'gsca query' to search for games and get their IDs
+# Use 'gsca list' to view IDs from existing lists
+
+# Example app IDs:
+570     # Dota 2
+730     # Counter-Strike 2
+1086940 # Baldur's Gate 3
+221680  # Rocksmith 2014
+
+# Comments and empty lines are ignored

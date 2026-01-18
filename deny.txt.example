@@ -1,0 +1,10 @@
+# Example deny list
+# Only numeric Steam app IDs are supported
+# Use 'gsca query' to search for games and get their IDs
+
+# Exclude Steam runtime components (example IDs)
+1070560 # Steam Linux Runtime 1.0
+228980  # Steamworks Common Redistributables
+
+# Exclude specific games
+221680  # Rocksmith 2014 (example - has special audio requirements)
