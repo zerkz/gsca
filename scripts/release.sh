@@ -26,10 +26,15 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
     exit 1
 fi
 
-# Check if tag already exists
+# Delete local tag if it exists (safe since we check remote later)
 if git rev-parse "$TAG" >/dev/null 2>&1; then
-    echo "Error: Tag $TAG already exists"
-    exit 1
+    # Check if tag exists on remote
+    if git ls-remote --tags origin | grep -q "refs/tags/$TAG"; then
+        echo "Error: Tag $TAG already exists on remote"
+        exit 1
+    fi
+    echo "Deleting existing local tag $TAG..."
+    git tag -d "$TAG"
 fi
 
 echo "=== Releasing gsca $TAG ==="
