@@ -9,18 +9,17 @@ linters:
     - unconvert
     - goconst
     - dupl
+  settings:
+    dupl:
+      threshold: 100
+    goconst:
+      min-len: 2
+      min-occurrences: 2
 
 formatters:
   enable:
     - gofmt
     - goimports
-
-linters-settings:
-  dupl:
-    threshold: 100
-  goconst:
-    min-len: 2
-    min-occurrences: 2
 
 run:
   timeout: 5m
