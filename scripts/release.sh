@@ -3,6 +3,7 @@ set -euo pipefail
 
 # Release script for gsca
 # Usage: ./scripts/release.sh 1.2.0
+# Requires: go, golangci-lint, goreleaser
 
 if [ $# -ne 1 ]; then
     echo "Usage: $0 <version>"
