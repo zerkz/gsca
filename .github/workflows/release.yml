@@ -51,6 +51,12 @@ jobs:
         echo "TAG=$TAG" >> $GITHUB_OUTPUT
         echo "VERSION=${TAG#v}" >> $GITHUB_OUTPUT
 
+    - name: Checkout for manifest
+      uses: actions/checkout@v4
+      with:
+        sparse-checkout: .github/flatpak-manifest.yaml
+        sparse-checkout-cone-mode: false
+
     - name: Download Linux binary from release
       run: |
         # First get release info with JSON accept header
@@ -65,12 +71,6 @@ jobs:
           "$ASSET_URL" -o gsca.tar.gz
         tar xzf gsca.tar.gz
         chmod +x gsca
-
-    - name: Checkout for manifest
-      uses: actions/checkout@v4
-      with:
-        sparse-checkout: .github/flatpak-manifest.yaml
-        sparse-checkout-cone-mode: false
 
     - name: Build Flatpak bundle
       run: |
