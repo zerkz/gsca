@@ -46,9 +46,39 @@ jobs:
       id: get_version
       run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
-    - name: Update manifest with tag
+    - name: Update manifest to use local source
       run: |
-        sed -i "s/tag: v1.0.0/tag: ${{ steps.get_version.outputs.VERSION }}/" com.github.zerkz.gsca.yaml
+        # Replace git source with local directory
+        cat > com.github.zerkz.gsca.yaml << 'EOF'
+        app-id: com.github.zerkz.gsca
+        runtime: org.freedesktop.Platform
+        runtime-version: '23.08'
+        sdk: org.freedesktop.Sdk
+        sdk-extensions:
+          - org.freedesktop.Sdk.Extension.golang
+
+        command: gsca
+
+        finish-args:
+          - --filesystem=~/.steam:rw
+          - --filesystem=~/.local/share/Steam:rw
+          - --talk-name=org.freedesktop.Flatpak
+          - --share=ipc
+
+        modules:
+          - name: gsca
+            buildsystem: simple
+            build-options:
+              append-path: /usr/lib/sdk/golang/bin
+              env:
+                GOBIN: /app/bin
+                GOROOT: /usr/lib/sdk/golang
+            build-commands:
+              - go build -ldflags="-s -w" -o /app/bin/gsca
+            sources:
+              - type: dir
+                path: .
+        EOF
 
     - name: Install Flatpak and flatpak-builder
       run: |
