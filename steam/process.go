@@ -35,6 +35,12 @@ func IsSteamRunning() (bool, error) {
 
 	// Check output
 	outputStr := strings.TrimSpace(string(output))
+
+	// On Windows, tasklist returns "INFO: No tasks..." when process not found
+	if runtime.GOOS == osWindows {
+		return !strings.Contains(outputStr, "No tasks"), nil
+	}
+
 	return outputStr != "", nil
 }
 
@@ -54,13 +60,8 @@ func CloseSteam() error {
 		_ = cmd.Run()
 		return nil
 	case osWindows:
-		// Windows: Try graceful shutdown first, then force if needed
-		// Try to use Steam's own shutdown first
-		shutdownCmd := exec.Command("cmd", "/C", "start", "steam://exitsteam")
-		_ = shutdownCmd.Run() // Ignore error, might not work
-
-		// Fallback to taskkill (graceful)
-		cmd = exec.Command("taskkill", "/IM", "steam.exe")
+		// Windows: Force kill Steam - graceful shutdown doesn't work reliably
+		cmd = exec.Command("taskkill", "/F", "/IM", "steam.exe")
 	default:
 		return fmt.Errorf("unsupported platform: %s", runtime.GOOS)
 	}
@@ -80,7 +81,8 @@ func StartSteam() error {
 		cmd = exec.Command("open", "-a", "Steam")
 	case osWindows:
 		// Windows: Use steam:// protocol which works regardless of install location
-		cmd = exec.Command("cmd", "/C", "start", "steam://open/main")
+		// The empty string "" is needed as the window title parameter for start command
+		cmd = exec.Command("cmd", "/C", "start", "", "steam://open/main")
 	default:
 		return fmt.Errorf("unsupported platform: %s", runtime.GOOS)
 	}
