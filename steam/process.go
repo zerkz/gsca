@@ -12,8 +12,10 @@ func IsSteamRunning() (bool, error) {
 	var cmd *exec.Cmd
 
 	switch runtime.GOOS {
-	case osLinux, osDarwin:
+	case osLinux:
 		cmd = exec.Command("pgrep", "-x", "steam")
+	case osDarwin:
+		cmd = exec.Command("pgrep", "-x", "steam_osx")
 	case osWindows:
 		cmd = exec.Command("tasklist", "/FI", "IMAGENAME eq steam.exe", "/NH")
 	default:
@@ -46,7 +48,11 @@ func CloseSteam() error {
 		cmd = exec.Command("steam", "-shutdown")
 	case osDarwin:
 		// macOS: Use AppleScript to quit gracefully
-		cmd = exec.Command("osascript", "-e", "quit app \"Steam\"")
+		// Note: osascript may return exit code 1 even when quit succeeds,
+		// so we ignore the error and let the caller poll IsSteamRunning()
+		cmd := exec.Command("osascript", "-e", "quit app \"Steam\"")
+		_ = cmd.Run()
+		return nil
 	case osWindows:
 		// Windows: Try graceful shutdown first, then force if needed
 		// Try to use Steam's own shutdown first
