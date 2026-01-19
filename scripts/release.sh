@@ -79,10 +79,14 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     exit 1
 fi
 
-# Commit version bump
-echo "Committing version bump..."
+# Commit version bump (if there are changes)
 git add PKGBUILD com.github.zerkz.gsca.yaml
-git commit -m "Bump version to ${VERSION}"
+if git diff --cached --quiet; then
+    echo "No version changes needed (already at ${VERSION})"
+else
+    echo "Committing version bump..."
+    git commit -m "Bump version to ${VERSION}"
+fi
 
 # Create tag
 echo "Creating tag $TAG..."
@@ -100,8 +104,7 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 fi
 
 echo "Pushing..."
-git push origin main
-git push origin "$TAG"
+git push origin main --follow-tags
 
 echo
 echo "=== Release $TAG complete ==="
