@@ -50,9 +50,11 @@ jobs:
 
     - name: Download Linux binary from release
       run: |
-        curl -sLf "https://github.com/zerkz/gsca/releases/download/${{ steps.get_version.outputs.TAG }}/gsca_${{ steps.get_version.outputs.VERSION }}_linux_amd64.tar.gz" -o gsca.tar.gz
-        tar xzf gsca.tar.gz
+        gh release download "${{ steps.get_version.outputs.TAG }}" --repo zerkz/gsca --pattern "gsca_${{ steps.get_version.outputs.VERSION }}_linux_amd64.tar.gz"
+        tar xzf gsca_${{ steps.get_version.outputs.VERSION }}_linux_amd64.tar.gz
         chmod +x gsca
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Create Flatpak manifest
       run: |
@@ -61,15 +63,12 @@ jobs:
         runtime: org.freedesktop.Platform
         runtime-version: '23.08'
         sdk: org.freedesktop.Sdk
-
         command: gsca
-
         finish-args:
           - --filesystem=~/.steam:rw
           - --filesystem=~/.local/share/Steam:rw
           - --talk-name=org.freedesktop.Flatpak
           - --share=ipc
-
         modules:
           - name: gsca
             buildsystem: simple
@@ -79,6 +78,8 @@ jobs:
               - type: file
                 path: gsca
         EOF
+        sed -i 's/^        //' com.github.zerkz.gsca.yaml
+        cat com.github.zerkz.gsca.yaml  # Debug: show the manifest
 
     - name: Install Flatpak and flatpak-builder
       run: |
