@@ -7,6 +7,8 @@
 
 A cross-platform CLI to manage Steam game launch options with interactive search and bulk updates.
 
+I mainly made this for easily updating newly installed Steam games with `game-performance %command` for [CachyOS game mode](https://wiki.cachyos.org/configuration/gaming/#power-profile-switching-on-demand).
+
 ## Installation
 
 **macOS (Homebrew):**
