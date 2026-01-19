@@ -34,6 +34,26 @@ archives:
 checksum:
   name_template: 'checksums.txt'
 
+brews:
+  - repository:
+      owner: zerkz
+      name: gsca-brew
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    homepage: "https://github.com/zerkz/gsca"
+    description: "Global Steam Command Args - CLI tool to manage Steam game launch options"
+    license: "MIT"
+    install: |
+      bin.install "gsca"
+
+scoops:
+  - repository:
+      owner: zerkz
+      name: gsca-scoop
+      token: "{{ .Env.SCOOP_TAP_TOKEN }}"
+    homepage: "https://github.com/zerkz/gsca"
+    description: "Global Steam Command Args - CLI tool to manage Steam game launch options"
+    license: "MIT"
+
 changelog:
   sort: asc
   filters:
@@ -57,22 +77,29 @@ release:
   footer: |
     ### Installation
 
-    **Linux/macOS:**
+    **macOS (Homebrew):**
     ```bash
-    # Download and extract
-    tar -xzf gsca_{{ .Version }}_linux_amd64.tar.gz
-    chmod +x gsca
-    sudo mv gsca /usr/local/bin/
+    brew install zerkz/gsca-brew/gsca
+    ```
+
+    **Windows (Scoop):**
+    ```powershell
+    scoop bucket add gsca https://github.com/zerkz/gsca-scoop.git
+    scoop install gsca
     ```
 
     **Arch Linux (AUR):**
     ```bash
     yay -S gsca
-    # Or for git version:
-    yay -S gsca-git
     ```
 
-    **Verify checksums:**
+    **Steam Deck / Linux (Flatpak):**
     ```bash
-    sha256sum -c checksums.txt
+    flatpak install gsca-{{ .Version }}.flatpak
+    ```
+
+    **Manual (Linux/macOS):**
+    ```bash
+    tar -xzf gsca_{{ .Version }}_linux_amd64.tar.gz
+    sudo mv gsca /usr/local/bin/
     ```
