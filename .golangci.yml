@@ -13,8 +13,8 @@ linters:
     dupl:
       threshold: 100
     goconst:
-      min-len: 2
-      min-occurrences: 2
+      min-len: 4
+      min-occurrences: 3
 
 formatters:
   enable:
