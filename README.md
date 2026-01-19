@@ -27,14 +27,14 @@ yay -S gsca
 
 **Steam Deck / Linux (Flatpak):**
 ```bash
-curl -LO https://github.com/zerkz/gsca/releases/download/v1.0.0/gsca-v1.0.0.flatpak
-flatpak install gsca-v1.0.0.flatpak
+curl -LO https://github.com/zerkz/gsca/releases/download/v1.0.1/gsca-v1.0.1.flatpak
+flatpak install gsca-v1.0.1.flatpak
 ```
 
 **Manual (Linux/macOS):**
 ```bash
-curl -LO https://github.com/zerkz/gsca/releases/download/v1.0.0/gsca_1.0.0_linux_amd64.tar.gz
-tar -xzf gsca_1.0.0_linux_amd64.tar.gz
+curl -LO https://github.com/zerkz/gsca/releases/download/v1.0.1/gsca_1.0.1_linux_amd64.tar.gz
+tar -xzf gsca_1.0.1_linux_amd64.tar.gz
 sudo mv gsca /usr/local/bin/
 ```
 

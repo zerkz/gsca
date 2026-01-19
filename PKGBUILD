@@ -1,6 +1,6 @@
 # Maintainer: Your Name <zack.whipkey@gmail.com>
 pkgname=gsca
-pkgver=1.0.0
+pkgver=1.0.1
 pkgrel=1
 pkgdesc='Global Steam Command Args - CLI tool to manage Steam game launch options'
 arch=('x86_64' 'aarch64')

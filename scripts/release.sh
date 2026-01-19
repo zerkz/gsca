@@ -77,9 +77,9 @@ echo "  README.md updated to ${VERSION}"
 # Show changes
 echo
 echo "=== Changes ==="
-git diff --stat
+git --no-pager diff --stat
 echo
-git diff
+git --no-pager diff
 
 # Confirm
 echo
