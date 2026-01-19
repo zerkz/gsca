@@ -4,7 +4,7 @@
 
 GitHub Actions workflows for automated testing and releases:
 
-### ✅ Continuous Integration (CI)
+### Continuous Integration (CI)
 **File**: `.github/workflows/ci.yml`
 
 Automatically runs on every push and pull request:
@@ -12,16 +12,17 @@ Automatically runs on every push and pull request:
 - **Linting**: Code quality checks with golangci-lint
 - **Build**: Verifies cross-platform compilation
 
-### 🚀 Release Automation
-**File**: `.github/workflows/release.yml`
+### Release Automation
+**Files**: `.github/workflows/release.yml`, `.goreleaser.yaml`
 
-Automatically triggers when you push a version tag:
+Uses [GoReleaser](https://goreleaser.com/) for releases. Automatically triggers when you push a version tag:
 - Builds binaries for 6 platforms (Linux, macOS, Windows × AMD64, ARM64)
+- Creates archives (tar.gz for Linux/macOS, zip for Windows)
 - Generates SHA256 checksums
 - Creates GitHub release with all artifacts
-- Auto-generates changelog
+- Auto-generates changelog from commit history
 
-### 📋 Configuration
+### Configuration
 **File**: `.golangci.yml`
 
 Linter configuration with sensible defaults for Go projects.
@@ -79,11 +80,12 @@ Added to README.md:
 .github/
 ├── workflows/
 │   ├── ci.yml              # CI workflow
-│   └── release.yml         # Release workflow
+│   └── release.yml         # Release workflow (GoReleaser)
 ├── CONTRIBUTING.md         # Contributor guidelines
 ├── README.md              # GitHub directory info
 └── WORKFLOWS.md           # Detailed workflow docs
 
+.goreleaser.yaml           # GoReleaser configuration
 .golangci.yml              # Linter configuration
 CI-CD-QUICKSTART.md        # This file
 ```
@@ -113,7 +115,16 @@ Check:
 
 ### Want to test locally before pushing?
 
-Install [act](https://github.com/nektos/act) to run GitHub Actions locally:
+**Test GoReleaser config:**
+```bash
+# Validate config
+goreleaser check
+
+# Test build without releasing
+goreleaser build --snapshot --clean
+```
+
+**Run GitHub Actions locally with [act](https://github.com/nektos/act):**
 ```bash
 # Install act
 curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
@@ -134,11 +145,11 @@ For more details, see:
 
 ## Summary
 
-✨ **You now have**:
+**You now have**:
 - Automated testing on 3 OSes × 3 Go versions
 - Code quality checks with linting
 - Automatic binary builds for 6 platforms
 - One-command releases with `git tag`
 - Professional CI/CD badges
 
-🎉 **No manual builds ever again!**
+**No manual builds ever again!**

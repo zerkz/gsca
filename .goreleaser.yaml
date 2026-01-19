@@ -1,0 +1,75 @@
+version: 2
+
+project_name: gsca
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - main: .
+    binary: gsca
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+
+archives:
+  - name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    formats:
+      - tar.gz
+      - zip:windows
+
+checksum:
+  name_template: 'checksums.txt'
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - Merge pull request
+      - Merge branch
+
+release:
+  github:
+    owner: zerkz
+    name: gsca
+  draft: false
+  prerelease: auto
+  header: |
+    ## GSCA {{ .Version }}
+
+    Global Steam Command Args - CLI tool to manage Steam game launch options
+  footer: |
+    ### Installation
+
+    **Linux/macOS:**
+    ```bash
+    # Download and extract
+    tar -xzf gsca_{{ .Version }}_linux_amd64.tar.gz
+    chmod +x gsca
+    sudo mv gsca /usr/local/bin/
+    ```
+
+    **Arch Linux (AUR):**
+    ```bash
+    yay -S gsca
+    # Or for git version:
+    yay -S gsca-git
+    ```
+
+    **Verify checksums:**
+    ```bash
+    sha256sum -c checksums.txt
+    ```

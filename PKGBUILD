@@ -1,4 +1,4 @@
-# Maintainer: Your Name <zack@zdware.com>
+# Maintainer: Your Name <zack.whipkey@gmail.com>
 pkgname=gsca
 pkgver=1.0.0
 pkgrel=1

@@ -2,6 +2,7 @@
 gsca
 gsca-*
 *.exe
+dist/
 
 # Test files
 test-*.txt

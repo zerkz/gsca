@@ -77,6 +77,35 @@ GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o gsca.exe
 GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o gsca-macos
 ```
 
+### Flatpak (Steam Deck)
+
+Build and install locally:
+```bash
+# Install flatpak-builder if needed
+sudo pacman -S flatpak-builder  # Arch
+sudo apt install flatpak-builder  # Debian/Ubuntu
+
+# Build
+flatpak-builder --force-clean build-dir com.github.zerkz.gsca.yaml
+
+# Install locally
+flatpak-builder --user --install --force-clean build-dir com.github.zerkz.gsca.yaml
+
+# Run
+flatpak run com.github.zerkz.gsca query
+```
+
+Build a distributable bundle:
+```bash
+flatpak-builder --repo=repo --force-clean build-dir com.github.zerkz.gsca.yaml
+flatpak build-bundle repo gsca.flatpak com.github.zerkz.gsca
+```
+
+Users can install the bundle with:
+```bash
+flatpak install --user gsca.flatpak
+```
+
 ## Binary Size
 
 Approximately 2-5MB with standard Go build, or 1-3MB with stripped symbols (`-ldflags="-s -w"`).

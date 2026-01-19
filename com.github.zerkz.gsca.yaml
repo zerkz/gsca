@@ -1,0 +1,31 @@
+app-id: com.github.zerkz.gsca
+runtime: org.freedesktop.Platform
+runtime-version: '23.08'
+sdk: org.freedesktop.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.golang
+
+command: gsca
+
+finish-args:
+  # Access to Steam config files
+  - --filesystem=~/.steam:rw
+  - --filesystem=~/.local/share/Steam:rw
+  # For detecting/controlling Steam process
+  - --talk-name=org.freedesktop.Flatpak
+  - --share=ipc
+
+modules:
+  - name: gsca
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/golang/bin
+      env:
+        GOBIN: /app/bin
+        GOROOT: /usr/lib/sdk/golang
+    build-commands:
+      - go build -ldflags="-s -w" -o /app/bin/gsca
+    sources:
+      - type: git
+        url: https://github.com/zerkz/gsca.git
+        tag: v1.0.0

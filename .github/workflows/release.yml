@@ -24,96 +24,47 @@ jobs:
       with:
         go-version: '1.21'
 
+    - name: Run GoReleaser
+      uses: goreleaser/goreleaser-action@v6
+      with:
+        distribution: goreleaser
+        version: '~> v2'
+        args: release --clean
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  flatpak:
+    name: Build Flatpak
+    runs-on: ubuntu-latest
+    needs: release
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
     - name: Get version from tag
       id: get_version
-      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
-    - name: Build binaries
+    - name: Update manifest with tag
       run: |
-        # Linux AMD64
-        GOOS=linux GOARCH=amd64 go build -v -ldflags="-s -w -X main.version=${{ steps.get_version.outputs.VERSION }}" -o dist/gsca-linux-amd64
+        sed -i "s/tag: v1.0.0/tag: ${{ steps.get_version.outputs.VERSION }}/" com.github.zerkz.gsca.yaml
 
-        # Linux ARM64
-        GOOS=linux GOARCH=arm64 go build -v -ldflags="-s -w -X main.version=${{ steps.get_version.outputs.VERSION }}" -o dist/gsca-linux-arm64
-
-        # Windows AMD64
-        GOOS=windows GOARCH=amd64 go build -v -ldflags="-s -w -X main.version=${{ steps.get_version.outputs.VERSION }}" -o dist/gsca-windows-amd64.exe
-
-        # Windows ARM64
-        GOOS=windows GOARCH=arm64 go build -v -ldflags="-s -w -X main.version=${{ steps.get_version.outputs.VERSION }}" -o dist/gsca-windows-arm64.exe
-
-        # macOS AMD64
-        GOOS=darwin GOARCH=amd64 go build -v -ldflags="-s -w -X main.version=${{ steps.get_version.outputs.VERSION }}" -o dist/gsca-darwin-amd64
-
-        # macOS ARM64 (Apple Silicon)
-        GOOS=darwin GOARCH=arm64 go build -v -ldflags="-s -w -X main.version=${{ steps.get_version.outputs.VERSION }}" -o dist/gsca-darwin-arm64
-
-    - name: Create checksums
+    - name: Install Flatpak and flatpak-builder
       run: |
-        cd dist
-        sha256sum * > checksums.txt
-        cat checksums.txt
+        sudo apt-get update
+        sudo apt-get install -y flatpak flatpak-builder
+        flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+        flatpak install --user -y flathub org.freedesktop.Platform//23.08 org.freedesktop.Sdk//23.08 org.freedesktop.Sdk.Extension.golang//23.08
 
-    - name: Generate changelog
-      id: changelog
+    - name: Build Flatpak bundle
       run: |
-        # Get the previous tag
-        PREV_TAG=$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1) 2>/dev/null || echo "")
+        flatpak-builder --user --force-clean --repo=repo build-dir com.github.zerkz.gsca.yaml
+        flatpak build-bundle repo gsca-${{ steps.get_version.outputs.VERSION }}.flatpak com.github.zerkz.gsca
 
-        if [ -z "$PREV_TAG" ]; then
-          echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          echo "Initial release" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-        else
-          echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          git log --pretty=format:"- %s (%h)" $PREV_TAG..HEAD >> $GITHUB_OUTPUT
-          echo "" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-        fi
-
-    - name: Create Release
+    - name: Upload Flatpak to release
       uses: softprops/action-gh-release@v2
       with:
-        files: |
-          dist/gsca-*
-          dist/checksums.txt
-        body: |
-          ## GSCA ${{ steps.get_version.outputs.VERSION }}
-
-          Game Steam Command Args - CLI tool to manage Steam game launch options
-
-          ### Installation
-
-          Download the appropriate binary for your platform:
-          - **Linux (AMD64)**: `gsca-linux-amd64`
-          - **Linux (ARM64)**: `gsca-linux-arm64`
-          - **Windows (AMD64)**: `gsca-windows-amd64.exe`
-          - **Windows (ARM64)**: `gsca-windows-arm64.exe`
-          - **macOS (Intel)**: `gsca-darwin-amd64`
-          - **macOS (Apple Silicon)**: `gsca-darwin-arm64`
-
-          Make the binary executable (Linux/macOS):
-          ```bash
-          chmod +x gsca-*
-          sudo mv gsca-* /usr/local/bin/gsca
-          ```
-
-          ### Verify checksums
-          ```bash
-          sha256sum -c checksums.txt
-          ```
-
-          ### Changes
-          ${{ steps.changelog.outputs.changelog }}
-
-          ### AUR Package
-          Arch Linux users can install from the AUR:
-          ```bash
-          yay -S gsca
-          # Or for the latest git version:
-          yay -S gsca-git
-          ```
-        draft: false
-        prerelease: false
+        files: gsca-${{ steps.get_version.outputs.VERSION }}.flatpak
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
