@@ -26,7 +26,10 @@ archives:
       {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
     formats:
       - tar.gz
-      - zip:windows
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
 
 checksum:
   name_template: 'checksums.txt'
