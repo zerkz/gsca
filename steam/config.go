@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/zdware/gsca/vdf"
+	"github.com/zerkz/gsca/vdf"
 )
 
 // UpdateLaunchOptions updates launch options for specified games

@@ -67,6 +67,13 @@ echo "Updating Flatpak manifest..."
 sed -i "s/tag: v.*/tag: ${TAG}/" com.github.zerkz.gsca.yaml
 echo "  Flatpak manifest updated to ${TAG}"
 
+# Update README.md install instructions
+echo "Updating README.md..."
+sed -i -E "s|/releases/download/v[0-9]+\.[0-9]+\.[0-9]+/|/releases/download/${TAG}/|g" README.md
+sed -i -E "s|gsca-v[0-9]+\.[0-9]+\.[0-9]+\.flatpak|gsca-${TAG}.flatpak|g" README.md
+sed -i -E "s|gsca_[0-9]+\.[0-9]+\.[0-9]+_|gsca_${VERSION}_|g" README.md
+echo "  README.md updated to ${VERSION}"
+
 # Show changes
 echo
 echo "=== Changes ==="
@@ -80,12 +87,12 @@ read -p "Commit these changes and create tag $TAG? [y/N] " -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo "Aborting. Reverting changes..."
-    git checkout -- PKGBUILD com.github.zerkz.gsca.yaml
+    git checkout -- PKGBUILD com.github.zerkz.gsca.yaml README.md
     exit 1
 fi
 
 # Commit version bump (if there are changes)
-git add PKGBUILD com.github.zerkz.gsca.yaml
+git add PKGBUILD com.github.zerkz.gsca.yaml README.md
 if git diff --cached --quiet; then
     echo "No version changes needed (already at ${VERSION})"
 else

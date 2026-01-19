@@ -1,4 +1,4 @@
-module github.com/zdware/gsca
+module github.com/zerkz/gsca
 
 go 1.21
 

@@ -95,7 +95,8 @@ release:
 
     **Steam Deck / Linux (Flatpak):**
     ```bash
-    flatpak install gsca-{{ .Version }}.flatpak
+    curl -LO https://github.com/zerkz/gsca/releases/download/v{{ .Version }}/gsca-v{{ .Version }}.flatpak
+    flatpak install gsca-v{{ .Version }}.flatpak
     ```
 
     **Manual (Linux/macOS):**

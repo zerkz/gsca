@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/zdware/gsca/steam"
+	"github.com/zerkz/gsca/steam"
 )
 
 // Global flags

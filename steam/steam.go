@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/zdware/gsca/vdf"
+	"github.com/zerkz/gsca/vdf"
 )
 
 const (

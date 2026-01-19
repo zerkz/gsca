@@ -9,8 +9,38 @@ A cross-platform CLI to manage Steam game launch options with interactive search
 
 ## Installation
 
+**macOS (Homebrew):**
 ```bash
-go build -o gsca
+brew install zerkz/gsca-brew/gsca
+```
+
+**Windows (Scoop):**
+```powershell
+scoop bucket add gsca https://github.com/zerkz/gsca-scoop.git
+scoop install gsca
+```
+
+**Arch Linux (AUR):**
+```bash
+yay -S gsca
+```
+
+**Steam Deck / Linux (Flatpak):**
+```bash
+curl -LO https://github.com/zerkz/gsca/releases/download/v1.0.0/gsca-v1.0.0.flatpak
+flatpak install gsca-v1.0.0.flatpak
+```
+
+**Manual (Linux/macOS):**
+```bash
+curl -LO https://github.com/zerkz/gsca/releases/download/v1.0.0/gsca_1.0.0_linux_amd64.tar.gz
+tar -xzf gsca_1.0.0_linux_amd64.tar.gz
+sudo mv gsca /usr/local/bin/
+```
+
+**From source:**
+```bash
+go install github.com/zerkz/gsca@latest
 ```
 
 ## Quick Start
