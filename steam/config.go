@@ -4,7 +4,10 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
+	"sort"
 	"strings"
+	"time"
 
 	"github.com/zerkz/gsca/vdf"
 )
@@ -183,4 +186,56 @@ func getNextBackupPath(originalPath string) string {
 
 	// Fallback (should never happen unless you have 10000 backups!)
 	return fmt.Sprintf("%s.%d", basePath, 10000)
+}
+
+// BackupInfo contains information about a backup file
+type BackupInfo struct {
+	Path    string
+	Name    string
+	ModTime time.Time
+}
+
+// ListBackups returns all backup files for the given config path, sorted by modification time (newest first)
+func ListBackups(localConfigPath string) ([]BackupInfo, error) {
+	dir := filepath.Dir(localConfigPath)
+	baseName := filepath.Base(localConfigPath) + ".backup"
+
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read config directory: %w", err)
+	}
+
+	var backups []BackupInfo
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+
+		name := entry.Name()
+		// Match "localconfig.vdf.backup" or "localconfig.vdf.backup.N"
+		if name == baseName || strings.HasPrefix(name, baseName+".") {
+			info, err := entry.Info()
+			if err != nil {
+				continue
+			}
+
+			backups = append(backups, BackupInfo{
+				Path:    filepath.Join(dir, name),
+				Name:    name,
+				ModTime: info.ModTime(),
+			})
+		}
+	}
+
+	// Sort by modification time, newest first
+	sort.Slice(backups, func(i, j int) bool {
+		return backups[i].ModTime.After(backups[j].ModTime)
+	})
+
+	return backups, nil
+}
+
+// RestoreBackup copies a backup file back to the original config location
+func RestoreBackup(backupPath, localConfigPath string) error {
+	return copyFile(backupPath, localConfigPath)
 }

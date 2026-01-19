@@ -29,12 +29,7 @@ var (
 	noBackup       bool
 	ignoreMissing  bool
 	openConfig     bool
-)
-
-// Query command flags
-var (
-	queryLimit int
-	queryAll   bool
+	updateAll      bool
 )
 
 const statusNotInstalled = " [NOT INSTALLED]"
@@ -64,7 +59,7 @@ var queryCmd = &cobra.Command{
 	Long: `Search for games by name and interactively select which ones to view or update.
 
 The query command will show matching games and let you select them interactively.
-Use --all without a search term to show all games in your library.`,
+Omit the search term to show all games in your library.`,
 	RunE: runQuery,
 }
 
@@ -76,6 +71,13 @@ var listCmd = &cobra.Command{
 If a file contains app IDs, the game names will be shown (if installed).
 If a file contains game names, the app IDs will be shown.`,
 	RunE: runList,
+}
+
+var restoreBackupCmd = &cobra.Command{
+	Use:   "restore-backup",
+	Short: "Restore a previous config backup",
+	Long:  `List available config backups and interactively select one to restore.`,
+	RunE:  runRestoreBackup,
 }
 
 var listFile string
@@ -95,11 +97,8 @@ func init() {
 	updateCmd.Flags().BoolVar(&noBackup, "no-backup", false, "Skip creating backup file")
 	updateCmd.Flags().BoolVar(&ignoreMissing, "ignore-missing", false, "Continue even if games in allow/deny list are not found")
 	updateCmd.Flags().BoolVarP(&openConfig, "open", "o", false, "Open the config file after updating")
+	updateCmd.Flags().BoolVar(&updateAll, "all", false, "Update all games (use with caution)")
 	_ = updateCmd.MarkFlagRequired("args")
-
-	// Query command flags
-	queryCmd.Flags().IntVar(&queryLimit, "limit", 10, "Maximum number of results to show")
-	queryCmd.Flags().BoolVar(&queryAll, "all", false, "Show all matches (no limit)")
 
 	// List command flags
 	listCmd.Flags().StringVarP(&listFile, "file", "f", "selected-games.txt", "Path to game list file")
@@ -108,12 +107,19 @@ func init() {
 	rootCmd.AddCommand(updateCmd)
 	rootCmd.AddCommand(queryCmd)
 	rootCmd.AddCommand(listCmd)
+	rootCmd.AddCommand(restoreBackupCmd)
 }
 
 func runUpdate(cmd *cobra.Command, args []string) error {
 	// Validate flags
 	if allowFile != "" && denyFile != "" {
 		return fmt.Errorf("cannot specify both --allow and --deny flags")
+	}
+	if !updateAll && allowFile == "" && denyFile == "" {
+		return fmt.Errorf("must specify --all, --allow, or --deny flag")
+	}
+	if updateAll && (allowFile != "" || denyFile != "") {
+		return fmt.Errorf("cannot combine --all with --allow or --deny flags")
 	}
 
 	// Check if Steam is running (skip in dry-run mode)
@@ -296,11 +302,6 @@ func runQuery(cmd *cobra.Command, args []string) error {
 		query = strings.Join(args, " ")
 	}
 
-	// Validate flags
-	if queryAll && query != "" {
-		return fmt.Errorf("cannot combine --all flag with a search term")
-	}
-
 	// Get Steam path
 	var err error
 	if steamPath == "" {
@@ -377,22 +378,10 @@ func runQuery(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	// Determine how many to show
-	displayLimit := queryLimit
-	if queryAll {
-		displayLimit = len(matches)
-	} else if len(matches) < queryLimit {
-		displayLimit = len(matches)
-	}
-
 	// Display results
-	fmt.Printf("\nFound %d match(es)", len(matches))
-	if !queryAll && len(matches) > queryLimit {
-		fmt.Printf(" (showing first %d, use --all to see all)", displayLimit)
-	}
-	fmt.Println(":")
+	fmt.Printf("\nFound %d match(es):\n", len(matches))
 
-	for i := 0; i < displayLimit; i++ {
+	for i := 0; i < len(matches); i++ {
 		game := matches[i]
 		fmt.Printf("[%d] %s\n", i+1, game.Name)
 		fmt.Printf("    App ID: %s\n", game.AppID)
@@ -423,7 +412,7 @@ func runQuery(cmd *cobra.Command, args []string) error {
 	}
 
 	// Parse selection
-	selected := parseSelection(input, displayLimit)
+	selected := parseSelection(input, len(matches))
 	if len(selected) == 0 {
 		fmt.Println("\nInvalid selection. Exiting.")
 		return nil
@@ -639,6 +628,117 @@ func runList(cmd *cobra.Command, args []string) error {
 
 	fmt.Printf("Total: %d game(s)\n", len(entries))
 
+	return nil
+}
+
+func runRestoreBackup(cmd *cobra.Command, args []string) error {
+	// Get Steam path
+	var err error
+	if steamPath == "" {
+		steamPath, err = steam.GetSteamPath()
+		if err != nil {
+			return fmt.Errorf("failed to detect Steam path: %w", err)
+		}
+	}
+
+	// Get user ID
+	if userID == "" {
+		userID, err = steam.GetUserID(steamPath)
+		if err != nil {
+			return fmt.Errorf("failed to detect user ID: %w", err)
+		}
+	}
+
+	localConfigPath := steam.GetLocalConfigPath(steamPath, userID)
+
+	// List available backups
+	backups, err := steam.ListBackups(localConfigPath)
+	if err != nil {
+		return fmt.Errorf("failed to list backups: %w", err)
+	}
+
+	if len(backups) == 0 {
+		fmt.Println("No backups found.")
+		return nil
+	}
+
+	// Display backups
+	fmt.Printf("\nAvailable backups for: %s\n\n", localConfigPath)
+	for i, backup := range backups {
+		fmt.Printf("[%d] %s\n", i+1, backup.Name)
+		fmt.Printf("    Created: %s\n\n", backup.ModTime.Format("2006-01-02 15:04:05"))
+	}
+
+	// Interactive selection
+	fmt.Println("────────────────────────────────────────")
+	fmt.Println("Enter the number of the backup to restore")
+	fmt.Println("Press Enter to cancel")
+	fmt.Print("\nSelection: ")
+
+	reader := bufio.NewReader(os.Stdin)
+	input, _ := reader.ReadString('\n')
+	input = strings.TrimSpace(input)
+
+	if input == "" {
+		fmt.Println("\nCancelled.")
+		return nil
+	}
+
+	// Parse selection
+	selection, err := strconv.Atoi(input)
+	if err != nil || selection < 1 || selection > len(backups) {
+		return fmt.Errorf("invalid selection: %s", input)
+	}
+
+	selectedBackup := backups[selection-1]
+
+	// Check if Steam is running
+	steamRunning, err := steam.IsSteamRunning()
+	if err != nil {
+		fmt.Printf("Warning: Could not check if Steam is running: %v\n", err)
+	} else if steamRunning {
+		fmt.Println("\nWARNING: Steam is currently running!")
+		fmt.Println("Steam must be closed before restoring a backup.")
+		fmt.Print("\nClose Steam and restore? (Y/n): ")
+
+		response, _ := reader.ReadString('\n')
+		response = strings.ToLower(strings.TrimSpace(response))
+
+		if response != "" && response != "y" && response != "yes" {
+			return fmt.Errorf("aborted - Steam must be closed to restore backup")
+		}
+
+		fmt.Println("Closing Steam...")
+		if err := steam.CloseSteam(); err != nil {
+			return fmt.Errorf("failed to close Steam: %w", err)
+		}
+
+		// Wait for Steam to close
+		fmt.Print("Waiting for Steam to close")
+		for i := 0; i < 10; i++ {
+			time.Sleep(1 * time.Second)
+			fmt.Print(".")
+			running, _ := steam.IsSteamRunning()
+			if !running {
+				break
+			}
+		}
+		fmt.Println(" done!")
+
+		// Verify Steam is closed
+		stillRunning, _ := steam.IsSteamRunning()
+		if stillRunning {
+			return fmt.Errorf("Steam is still running - please close it manually")
+		}
+	}
+
+	// Restore the backup
+	fmt.Printf("\nRestoring %s...\n", selectedBackup.Name)
+	if err := steam.RestoreBackup(selectedBackup.Path, localConfigPath); err != nil {
+		return fmt.Errorf("failed to restore backup: %w", err)
+	}
+
+	fmt.Println("Backup restored successfully!")
 	return nil
 }
 
