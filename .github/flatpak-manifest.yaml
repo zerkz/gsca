@@ -1,0 +1,20 @@
+app-id: com.github.zerkz.gsca
+runtime: org.freedesktop.Platform
+runtime-version: '24.08'
+sdk: org.freedesktop.Sdk
+command: gsca
+
+finish-args:
+  - --filesystem=~/.steam:rw
+  - --filesystem=~/.local/share/Steam:rw
+  - --talk-name=org.freedesktop.Flatpak
+  - --share=ipc
+
+modules:
+  - name: gsca
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 gsca /app/bin/gsca
+    sources:
+      - type: file
+        path: gsca
