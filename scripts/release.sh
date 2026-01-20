@@ -57,21 +57,30 @@ echo "Checking GoReleaser config..."
 goreleaser check
 echo
 
+# Cross-platform sed in-place (BSD vs GNU)
+sedi() {
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' "$@"
+    else
+        sed -i "$@"
+    fi
+}
+
 # Update PKGBUILD
 echo "Updating PKGBUILD..."
-sed -i "s/^pkgver=.*/pkgver=${VERSION}/" PKGBUILD
+sedi "s/^pkgver=.*/pkgver=${VERSION}/" PKGBUILD
 echo "  PKGBUILD updated to ${VERSION}"
 
 # Update Flatpak manifest
 echo "Updating Flatpak manifest..."
-sed -i "s/tag: v.*/tag: ${TAG}/" com.github.zerkz.gsca.yaml
+sedi "s/tag: v.*/tag: ${TAG}/" com.github.zerkz.gsca.yaml
 echo "  Flatpak manifest updated to ${TAG}"
 
 # Update README.md install instructions
 echo "Updating README.md..."
-sed -i -E "s|/releases/download/v[0-9]+\.[0-9]+\.[0-9]+/|/releases/download/${TAG}/|g" README.md
-sed -i -E "s|gsca-v[0-9]+\.[0-9]+\.[0-9]+\.flatpak|gsca-${TAG}.flatpak|g" README.md
-sed -i -E "s|gsca_[0-9]+\.[0-9]+\.[0-9]+_|gsca_${VERSION}_|g" README.md
+sedi -E "s|/releases/download/v[0-9]+\.[0-9]+\.[0-9]+/|/releases/download/${TAG}/|g" README.md
+sedi -E "s|gsca-v[0-9]+\.[0-9]+\.[0-9]+\.flatpak|gsca-${TAG}.flatpak|g" README.md
+sedi -E "s|gsca_[0-9]+\.[0-9]+\.[0-9]+_|gsca_${VERSION}_|g" README.md
 echo "  README.md updated to ${VERSION}"
 
 # Show changes
