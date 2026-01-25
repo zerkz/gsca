@@ -59,19 +59,12 @@ gsca update --args "gamemoderun %command%" --allow selected-games.txt
 
 ### `gsca query [search term]`
 
-Search for installed games and export selections to a file.
+Search for installed games and interactively select which ones to export.
 
 ```bash
 gsca query baldur        # Search for "baldur"
-gsca query               # Show first 10 installed games
-gsca query --all         # Show all installed games
+gsca query               # Show all installed games
 ```
-
-**Flags:**
-| Flag | Description |
-|------|-------------|
-| `--limit int` | Maximum number of results to show (default 10) |
-| `--all` | Show all matches (no limit) |
 
 Selection syntax: `1,3,5` (specific), `1-5` (range), `*` (all)
 
@@ -105,11 +98,20 @@ gsca update --args "test" --deny exclude.txt --dry-run
 | `-a, --args string` | Launch arguments to set (required) |
 | `-l, --allow string` | Path to allow list file |
 | `-d, --deny string` | Path to deny list file |
+| `--all` | Update all games (use with caution) |
 | `-f, --force` | Automatically close Steam if running (no prompt) |
 | `-o, --open` | Open the config file after updating |
 | `--dry-run` | Show changes without modifying files |
 | `--no-backup` | Skip creating backup file |
 | `--ignore-missing` | Continue if games in list are not found |
+
+### `gsca restore-backup`
+
+List available config backups and interactively select one to restore.
+
+```bash
+gsca restore-backup
+```
 
 ### Global Flags
 

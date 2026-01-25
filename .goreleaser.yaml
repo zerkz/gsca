@@ -54,6 +54,21 @@ scoops:
     description: "Global Steam Command Args - CLI tool to manage Steam game launch options"
     license: "MIT"
 
+aurs:
+  - name: gsca
+    homepage: "https://github.com/zerkz/gsca"
+    description: "Global Steam Command Args - CLI tool to manage Steam game launch options"
+    maintainers:
+      - "Zack Whipkey <zack.whipkey@gmail.com>"
+    license: "MIT"
+    private_key: "{{ .Env.AUR_SSH_PRIVATE_KEY }}"
+    git_url: "ssh://aur@aur.archlinux.org/gsca.git"
+    package: |-
+      # Binary
+      install -Dm755 "./gsca" "${pkgdir}/usr/bin/gsca"
+      # License
+      install -Dm644 "./LICENSE" "${pkgdir}/usr/share/licenses/gsca/LICENSE"
+
 changelog:
   sort: asc
   filters:
