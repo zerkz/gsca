@@ -55,14 +55,18 @@ scoops:
     license: "MIT"
 
 aurs:
-  - name: gsca
+  - name: gsca-bin
     homepage: "https://github.com/zerkz/gsca"
     description: "Global Steam Command Args - CLI tool to manage Steam game launch options"
     maintainers:
       - "Zack Whipkey <zack.whipkey@gmail.com>"
     license: "MIT"
     private_key: "{{ .Env.AUR_SSH_PRIVATE_KEY }}"
-    git_url: "ssh://aur@aur.archlinux.org/gsca.git"
+    git_url: "ssh://aur@aur.archlinux.org/gsca-bin.git"
+    provides:
+      - gsca
+    conflicts:
+      - gsca
     package: |-
       # Binary
       install -Dm755 "./gsca" "${pkgdir}/usr/bin/gsca"
@@ -105,7 +109,7 @@ release:
 
     **Arch Linux (AUR):**
     ```bash
-    yay -S gsca
+    yay -S gsca-bin
     ```
 
     **Steam Deck / Linux (Flatpak):**

@@ -24,7 +24,7 @@ scoop install gsca
 
 **Arch Linux (AUR):**
 ```bash
-yay -S gsca
+yay -S gsca-bin
 ```
 
 **Steam Deck / Linux (Flatpak):**
